@@ -31,10 +31,10 @@ func ConvertDownwardAPIFieldLabel(version, label, value string) (string, string,
 		return "", "", fmt.Errorf("unsupported pod version: %s", version)
 	}
 
-	if path, _, ok := fieldpath.SplitMaybeSubscriptedPath(label); ok {
+	if path, key, ok := fieldpath.SplitMaybeSubscriptedPath(label); ok {
 		switch path {
-		case "metadata.annotations", "metadata.labels":
-			return label, value, nil
+		case "metadata.annotations", "metadata.labels", "spec.nodeLabels":
+			return label, key, nil
 		default:
 			return "", "", fmt.Errorf("field label does not support subscript: %s", label)
 		}
@@ -47,6 +47,7 @@ func ConvertDownwardAPIFieldLabel(version, label, value string) (string, string,
 		"metadata.namespace",
 		"metadata.uid",
 		"spec.nodeName",
+		"spec.nodeLabels",
 		"spec.restartPolicy",
 		"spec.serviceAccountName",
 		"spec.schedulerName",
