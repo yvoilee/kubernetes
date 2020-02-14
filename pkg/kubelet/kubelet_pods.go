@@ -49,6 +49,7 @@ import (
 	v1qos "k8s.io/kubernetes/pkg/apis/core/v1/helper/qos"
 	"k8s.io/kubernetes/pkg/features"
 	"k8s.io/kubernetes/pkg/fieldpath"
+	fp "k8s.io/kubernetes/pkg/fieldpath"
 	"k8s.io/kubernetes/pkg/kubelet/cm"
 	kubecontainer "k8s.io/kubernetes/pkg/kubelet/container"
 	"k8s.io/kubernetes/pkg/kubelet/envvars"
@@ -775,19 +776,22 @@ func (kl *Kubelet) podFieldSelectorRuntimeValue(fs *v1.ObjectFieldSelector, pod 
 	if err != nil {
 		return "", err
 	}
+	if key != "" {
+		if path, key, ok := fp.SplitMaybeSubscriptedPath(internalFieldPath); ok {
+			if path == "spec.nodeLabels" {
+				label, labelNotExist := kl.nodeLabels[key]
+				if !labelNotExist {
+					return label, nil
+				}
+				return "", nil
+			}
+		}
+	}
 	switch internalFieldPath {
 	case "spec.nodeName":
 		return pod.Spec.NodeName, nil
 	case "spec.serviceAccountName":
 		return pod.Spec.ServiceAccountName, nil
-	case "sepc.nodeLabels":
-		if key != "" {
-			label, keyNotExist := kl.nodeLabels[key]
-			if !keyNotExist {
-				return label, nil
-			}
-		}
-		return "", nil
 	case "status.hostIP":
 		hostIP, err := kl.getHostIPAnyWay()
 		if err != nil {

@@ -2140,6 +2140,10 @@ func validateObjectFieldSelector(fs *core.ObjectFieldSelector, expressions *sets
 			for _, msg := range validation.IsQualifiedName(subscript) {
 				allErrs = append(allErrs, field.Invalid(fldPath, subscript, msg))
 			}
+		case "spec.nodeLabels":
+			for _, msg := range validation.IsQualifiedName(subscript) {
+				allErrs = append(allErrs, field.Invalid(fldPath, subscript, msg))
+			}
 		default:
 			allErrs = append(allErrs, field.Invalid(fldPath, path, "does not support subscript"))
 		}
