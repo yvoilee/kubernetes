@@ -779,8 +779,7 @@ func (kl *Kubelet) podFieldSelectorRuntimeValue(fs *v1.ObjectFieldSelector, pod 
 	if key != "" {
 		if path, key, ok := fp.SplitMaybeSubscriptedPath(internalFieldPath); ok {
 			if path == "spec.nodeLabels" {
-				label, labelNotExist := kl.nodeLabels[key]
-				if !labelNotExist {
+				if label, ok := kl.nodeLabels[key]; ok {
 					return label, nil
 				}
 				return "", nil
