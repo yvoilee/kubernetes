@@ -788,9 +788,19 @@ func (kl *Kubelet) makeEnvironmentVariables(pod *v1.Pod, container *v1.Container
 // podFieldSelectorRuntimeValue returns the runtime value of the given
 // selector for a pod.
 func (kl *Kubelet) podFieldSelectorRuntimeValue(fs *v1.ObjectFieldSelector, pod *v1.Pod, podIP string, podIPs []string) (string, error) {
-	internalFieldPath, _, err := podshelper.ConvertDownwardAPIFieldLabel(fs.APIVersion, fs.FieldPath, "")
+	internalFieldPath, key, err := podshelper.ConvertDownwardAPIFieldLabel(fs.APIVersion, fs.FieldPath, "")
 	if err != nil {
 		return "", err
+	}
+	if key != "" {
+		if path, key, ok := fieldpath.SplitMaybeSubscriptedPath(internalFieldPath); ok {
+			if path == "spec.nodeLabels" {
+				if label, ok := kl.nodeLabels[key]; ok {
+					return label, nil
+				}
+				return "", nil
+			}
+		}
 	}
 	switch internalFieldPath {
 	case "spec.nodeName":
